@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Expense Tracker</h1>
+
+        <p id="balance">Balance: ¥0</p>
+        <p id="income">Income: ¥0</p>
+        <p id="expense">Expense: ¥0</p>
+
+        <input type="text" id="title" placeholder="Enter title">
+
+        
+            <select id="category">
+                <option value="food">Food</option>
+                <option value="transport">Transport</option>
+                <option value="salary">Salary</option>
+                <option value="other">Other</option>
+            </select>
+
+        <input type="number" id="amount" placeholder="Enter amount (+income, -expense)">
+
+        <button id="add-btn">Add</button>
+
+        <div class="tracker">
+            <button class="filter-btn" data-category="all">All</button>
+            <button class="filter-btn" data-category="food">Food</button>
+            <button class="filter-btn" data-category="transport">Transport</button>
+            <button class="filter-btn" data-category="salary">Salary</button>
+        </div>
+
+        <ul id="list"></ul>
+
+        <canvas id="myChart"></canvas>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+    
+</body>
+</html>
