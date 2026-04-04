@@ -16,7 +16,7 @@ JavaScript
 Chart.js
 🌐 Live Demo
 
-👉 https://yourname.github.io/expense-tracker/
+👉 https://kkato0219.github.io/expense-tracker-app/
 
 📸 Screenshot
 
