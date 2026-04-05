@@ -16,11 +16,13 @@ const modal = document.getElementById("modal");
 const editTitle = document.getElementById("edit-title");
 const editAmount = document.getElementById("edit-amount");
 const editCategory = document.getElementById("edit-category");
+const saveEditBtn = document.getElementById("save-edit");
+const cancelEditBtn = document.getElementById("cancel-edit");
 
 let transactions = [];
 let currentFilter = "all";
 let chart;
-let editing = null;
+let editingId = null;
 
 function saveToLocalStorage() {
     localStorage.setItem("transactions", JSON.stringify(transactions));
@@ -31,6 +33,7 @@ const saved = localStorage.getItem("transactions");
 if (saved) {
     transactions = JSON.parse(saved);
     renderTransactions(transactions);
+    applyFilter();
     updateValues();
     renderChart();
 }
@@ -40,9 +43,9 @@ addBtn.addEventListener("click", function () {
     const amount = Number(amountInput.value.trim());
     const category = categoryInput.value;
 
-    if (!title || !amount) {
-        alert("Please enter a valid title and amount");
-        return;
+    if (!title || Number.isNaN(amount) || amount === 0) {
+    alert("Please enter a valid title and amount (non-zero)");
+    return;
     }
 
     const transaction = {
@@ -55,10 +58,8 @@ addBtn.addEventListener("click", function () {
     transactions.push(transaction);
 
     applyFilter();
-
     updateValues();
     renderChart();
-
     saveToLocalStorage();
 
     titleInput.value = "";
@@ -79,17 +80,14 @@ searchInput.addEventListener("input", applyFilter);
 
 function addTransactionToList(transaction) {
     const li = document.createElement("li");
-
     li.classList.add(transaction.amount > 0 ? "income" : "expense");
+    li.dataset.id = transaction.id;
     
 
     li.innerHTML = `
         <span class ="text">
             ${transaction.title} (${transaction.category}):
-            ${new Intl.NumberFormat("ja-JP", { 
-                style: "currency",
-                currency: "JPY"
-            }).format(transaction.amount)}
+            ${formatYen(transaction.amount)}
         </span>
         <div>    
             <button class="edit-btn">Edit</button>
@@ -97,7 +95,6 @@ function addTransactionToList(transaction) {
         </div>            
     `;
 
-    li.dataset.id = transaction.id;
     list.appendChild(li);
 
     li.querySelector(".delete-btn").addEventListener("click", () => {
@@ -110,38 +107,52 @@ function addTransactionToList(transaction) {
 }
 
 modal.addEventListener("click", (e) => {
-    if (e.target === modal) {
-        modal.classList.add("hidden");
-    }
+    if (e.target === modal) closeModal();
+       
 });
 
 document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-        modal.classList.add("hidden");
-    }
+    if (e.key === "Escape") closeModal();
 });
 
 saveEditBtn.addEventListener("click", () => {
     const transaction = transactions.find(t => t.id === editingId);
+    if (!transaction) return;
 
-    transaction.title = editTitle.value;
-    transaction.amount = Number(editAmount.value);
-    transaction.category = editCategory.value;
+    const title = editTitle.value.trim();
+    const amount = Number(editAmount.value.trim());
+    const category = editCategory.value;
+
+    if (!title || Number.isNaN(amount) || amount === 0) {
+        alert("Please enter a valid title and amount (non-zero)");
+        return;
+    }
+
+    transaction.title = title;
+    transaction.amount = amount;
+    transaction.category = category;
 
     applyFilter();
     updateValues();
     renderChart();
     saveToLocalStorage();
 
-    modal.classList.remove("show");
+    closeModal();
+});
 
+cancelEditBtn.addEventListener("click", closeModal);
+
+function closeModal() {
+    modal.classList.remove("show");
     setTimeout(() => {
         modal.classList.add("hidden");
+        editingId = null;
     }, 200);
-});
+}
 
 function editTransaction(id) {
     const transaction = transactions.find(t => t.id === id);
+    if (!transaction) return;
 
     editingId = id;
 
@@ -159,31 +170,20 @@ function updateValues() {
     const income = amounts.filter(a => a > 0).reduce((acc, item) => acc + item, 0);
     const expense = amounts.filter(a => a < 0).reduce((acc, item) => acc + item, 0);
 
-    balanceEl.textContent = `Balance: ${new Intl.NumberFormat("ja-JP", {
-        style: "currency",
-        currency: "JPY"
-    }).format(total)}`;
-
-    incomeEl.textContent = `Income: ${new Intl.NumberFormat("ja-JP", {
-        style: "currency",
-        currency: "JPY"
-    }).format(income)}`;
-
-    expenseEl.textContent = `Expense: ${new Intl.NumberFormat("ja-JP", {
-        style: "currency",
-        currency: "JPY"
-    }).format(Math.abs(expense))}`;
+    balanceEl.textContent = `Balance: ${formatYen(total)}`;
+    incomeEl.textContent = `Income: ${formatYen(income)}`;
+    expenseEl.textContent = `Expense: ${formatYen(Math.abs(expense))}`;
 }
 
 function deleteTransaction(id) {
     const li = document.querySelector(`li[data-id="${id}"]`);
+    if (!li) return;
 
     li.style.opacity = "0";
     li.style.transform = "translateX(50px)";
 
     setTimeout(() => {
         transactions = transactions.filter(t => t.id !== id);
-
         applyFilter();
         updateValues();
         renderChart();
@@ -194,7 +194,6 @@ function deleteTransaction(id) {
 
 function renderTransactions(data) {
     list.innerHTML = "";
-
     if (data.length === 0) {
         list.innerHTML = `<p class="empty">No transactions found</p>`;
         return;
@@ -210,9 +209,7 @@ function applyFilter() {
 
     const searchTerm = searchInput.value.toLowerCase();
 
-    filtered = filtered.filter(t =>
-        t.title.toLowerCase().includes(searchTerm)
-    );
+    filtered = filtered.filter(t => t.title.toLowerCase().includes(searchTerm));
 
     renderTransactions(filtered);
 }
@@ -235,7 +232,6 @@ function renderChart() {
     }
 
     const ctx = document.getElementById("myChart").getContext("2d");
-
     chart = new Chart(ctx, {
         type: "doughnut",
         data: {
