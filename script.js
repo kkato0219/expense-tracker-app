@@ -8,12 +8,23 @@ const list = document.querySelector("#list");
 const balanceEl = document.querySelector("#balance");
 const incomeEl = document.querySelector("#income");
 const expenseEl = document.querySelector("#expense");
+const searchInput = document.querySelector("#search");
 
 const filterBtns = document.querySelectorAll(".filter-btn");
+
+const modal = document.getElementById("modal");
+const editTitle = document.getElementById("edit-title");
+const editAmount = document.getElementById("edit-amount");
+const editCategory = document.getElementById("edit-category");
 
 let transactions = [];
 let currentFilter = "all";
 let chart;
+let editing = null;
+
+function saveToLocalStorage() {
+    localStorage.setItem("transactions", JSON.stringify(transactions));
+}
 
 const saved = localStorage.getItem("transactions");
 
@@ -48,11 +59,23 @@ addBtn.addEventListener("click", function () {
     updateValues();
     renderChart();
 
-    localStorage.setItem("transactions", JSON.stringify(transactions));
+    saveToLocalStorage();
 
     titleInput.value = "";
     amountInput.value = "";
 });
+
+filterBtns.forEach(btn => {
+    btn.addEventListener("click", () => {        
+        filterBtns.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        currentFilter = btn.dataset.category;
+        applyFilter();
+    });
+});
+
+searchInput.addEventListener("input", applyFilter);
 
 function addTransactionToList(transaction) {
     const li = document.createElement("li");
@@ -61,9 +84,17 @@ function addTransactionToList(transaction) {
     
 
     li.innerHTML = `
-        ${transaction.title} (${transaction.category}): ¥${transaction.amount}
-        <button class="edit-btn">Edit</button>
-        <button class="delete-btn">Delete</button>        
+        <span class ="text">
+            ${transaction.title} (${transaction.category}):
+            ${new Intl.NumberFormat("ja-JP", { 
+                style: "currency",
+                currency: "JPY"
+            }).format(transaction.amount)}
+        </span>
+        <div>    
+            <button class="edit-btn">Edit</button>
+            <button class="delete-btn">Delete</button>
+        </div>            
     `;
 
     li.dataset.id = transaction.id;
@@ -78,21 +109,48 @@ function addTransactionToList(transaction) {
     });
 }
 
-function editTransaction(id) {
-    const transaction = transactions.find(t => t.id === id);
+modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+        modal.classList.add("hidden");
+    }
+});
 
-    const newTitle = prompt("Edit title:", transaction.title);
-    const newAmount = prompt("Edit amount:", transaction.amount);
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        modal.classList.add("hidden");
+    }
+});
 
-    if (!newTitle || !newAmount) return;
+saveEditBtn.addEventListener("click", () => {
+    const transaction = transactions.find(t => t.id === editingId);
 
-    transaction.title = newTitle;
-    transaction.amount = Number(newAmount);
+    transaction.title = editTitle.value;
+    transaction.amount = Number(editAmount.value);
+    transaction.category = editCategory.value;
 
     applyFilter();
     updateValues();
     renderChart();
-    localStorage.setItem("transactions", JSON.stringify(transactions));
+    saveToLocalStorage();
+
+    modal.classList.remove("show");
+
+    setTimeout(() => {
+        modal.classList.add("hidden");
+    }, 200);
+});
+
+function editTransaction(id) {
+    const transaction = transactions.find(t => t.id === id);
+
+    editingId = id;
+
+    editTitle.value = transaction.title;
+    editAmount.value = transaction.amount;
+    editCategory.value = transaction.category;
+
+    modal.classList.add("show");
+    modal.classList.remove("hidden");
 }
 
 function updateValues() {
@@ -101,43 +159,60 @@ function updateValues() {
     const income = amounts.filter(a => a > 0).reduce((acc, item) => acc + item, 0);
     const expense = amounts.filter(a => a < 0).reduce((acc, item) => acc + item, 0);
 
-    balanceEl.textContent = `Balance: ¥${total}`;
-    incomeEl.textContent = `Income: ¥${income}`;
-    expenseEl.textContent = `Expense: ¥${Math.abs(expense)}`;
+    balanceEl.textContent = `Balance: ${new Intl.NumberFormat("ja-JP", {
+        style: "currency",
+        currency: "JPY"
+    }).format(total)}`;
+
+    incomeEl.textContent = `Income: ${new Intl.NumberFormat("ja-JP", {
+        style: "currency",
+        currency: "JPY"
+    }).format(income)}`;
+
+    expenseEl.textContent = `Expense: ${new Intl.NumberFormat("ja-JP", {
+        style: "currency",
+        currency: "JPY"
+    }).format(Math.abs(expense))}`;
 }
 
 function deleteTransaction(id) {
-    transactions = transactions.filter(t => t.id !== id);
+    const li = document.querySelector(`li[data-id="${id}"]`);
 
-    applyFilter();
+    li.style.opacity = "0";
+    li.style.transform = "translateX(50px)";
 
-    updateValues();
-    renderChart();
+    setTimeout(() => {
+        transactions = transactions.filter(t => t.id !== id);
 
-    localStorage.setItem("transactions", JSON.stringify(transactions));
+        applyFilter();
+        updateValues();
+        renderChart();
+        saveToLocalStorage();
+    }, 200);
 }
 
-filterBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-        
-        filterBtns.forEach(b => b.classList.remove("active"));
-
-        btn.classList.add("active");
-
-        currentFilter = btn.dataset.category;
-        applyFilter();
-    });
-});
 
 function renderTransactions(data) {
     list.innerHTML = "";
+
+    if (data.length === 0) {
+        list.innerHTML = `<p class="empty">No transactions found</p>`;
+        return;
+    }
+
     data.forEach(addTransactionToList);
 }
 
 function applyFilter() {
-    const filtered = currentFilter === "all"
-    ? transactions
-    : transactions.filter(t => t.category === currentFilter);
+    let filtered = currentFilter === "all"
+        ? transactions
+        : transactions.filter(t => t.category === currentFilter);
+
+    const searchTerm = searchInput.value.toLowerCase();
+
+    filtered = filtered.filter(t =>
+        t.title.toLowerCase().includes(searchTerm)
+    );
 
     renderTransactions(filtered);
 }
@@ -151,23 +226,32 @@ function renderChart() {
         .filter(t => t.amount < 0)
         .reduce ((acc, t) => acc + t.amount, 0);
 
-    const data = {
-        labels: ["Income", "Expense"],
-        datasets: [{
-            label: "Money Flow",
-            data: [income, Math.abs(expense)],
-            backgroundColor: ["#4caf50", "#f44336"]
-        }]
-    };
+    const data = [income, Math.abs(expense)];
 
     if (chart) {
-        chart.destroy();
+        chart.data.datasets[0].data = data;
+        chart.update();
+        return;
     }
 
     const ctx = document.getElementById("myChart").getContext("2d");
 
     chart = new Chart(ctx, {
         type: "doughnut",
-        data: data
+        data: {
+            labels: ["Income", "Expense"],
+            datasets: [{
+                label: "Money Flow",
+                data: data,
+                backgroundColor: ["#4caf50", "#f44336"]
+            }]
+        }
     });
+}
+
+function formatYen(amount) {
+    return new Intl.NumberFormat("ja-JP", {
+        style: "currency",
+        currency: "JPY"
+    }).format(amount);
 }

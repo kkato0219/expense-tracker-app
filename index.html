@@ -9,36 +9,76 @@
 <body>
 
     <div class="container">
-        <h1>Expense Tracker</h1>
 
-        <p id="balance">Balance: ¥0</p>
-        <p id="income">Income: ¥0</p>
-        <p id="expense">Expense: ¥0</p>
+        <h1>💰 BudgetFlow</h1>
 
-        <input type="text" id="title" placeholder="Enter title">
+        <div class="card summary">
+            <h2>Summary</h2>
+            <div class="summary-items">
+                <p id="balance">Balance: ¥0</p>
+                <p id="income">Income: ¥0</p>
+                <p id="expense">Expense: ¥0</p>
+            </div>
+        </div>
 
-        
-            <select id="category">
+        <div class="card form">
+            <h2>Add Transaction</h2>
+
+            <input type="text" id="title" placeholder="Enter title">
+
+            <select  id="category">
                 <option value="food">Food</option>
                 <option value="transport">Transport</option>
                 <option value="salary">Salary</option>
                 <option value="other">Other</option>
             </select>
 
-        <input type="number" id="amount" placeholder="Enter amount (+income, -expense)">
+            <input type="number" id="amount" placeholder="Enter ammount (+income, -expense)">
 
-        <button id="add-btn">Add</button>
-
-        <div class="tracker">
-            <button class="filter-btn" data-category="all">All</button>
-            <button class="filter-btn" data-category="food">Food</button>
-            <button class="filter-btn" data-category="transport">Transport</button>
-            <button class="filter-btn" data-category="salary">Salary</button>
+            <button id="add-btn">Add Transaction</button>
         </div>
 
-        <ul id="list"></ul>
+        <input type="text" id="search" placeholder="Search Transactions...">
 
-        <canvas id="myChart"></canvas>
+        <div class="card transactions">
+            <h2>Transactions</h2>
+            
+            <div class="tracker">
+                <button class="filter-btn" data-category="all">All</button>
+                <button class="filter-btn" data-category="food">Food</button>
+                <button class="filter-btn" data-category="transport">Transport</button>
+                <button class="filter-btn" data-category="salary">Salary</button>
+            </div>
+
+            <ul id="list"></ul>
+        </div>
+
+        <div class="card chart">
+            <h2>Spending Overview</h2>
+            <canvas id="myChart"></canvas>
+        </div>
+
+    </div>
+
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Edit Transaction</h3>
+
+            <input type="text" id="edit-title">
+            <input type="number" id="edit-amount">
+            
+            <select id="edit-category">
+                <option value="food">Food</option>
+                <option value="transport">Transport</option>
+                <option value="salary">Salary</option>
+                <option value="othe">Other</option>
+            </select>
+
+            <div class="modal-actions">
+                <button id="save-edit">Save</button>
+                <button id="cancel-edit">Cancel</button>
+            </div>
+        </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
