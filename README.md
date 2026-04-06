@@ -35,4 +35,4 @@ A simple and responsive expense tracking web app built with vanilla JavaScript.
 - Category-based charts
 
 ## 🙌 Author
-Ken-ichi Kato
+Kenichi Kato
