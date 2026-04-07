@@ -18,6 +18,7 @@ const editAmount = document.getElementById("edit-amount");
 const editCategory = document.getElementById("edit-category");
 const saveEditBtn = document.getElementById("save-edit");
 const cancelEditBtn = document.getElementById("cancel-edit");
+const toggleBtn = document.getElementById("toggle-theme");
 
 let transactions = [];
 let currentFilter = "all";
@@ -38,6 +39,16 @@ if (saved) {
     renderChart();
 }
 
+toggleBtn.addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+
+    localStorage.setItem("darkMode", document.body.classList.contains("dark"));
+});
+
+if (localStorage.getItem("darkMode") === "true") {
+    document.body.classList.add("dark");
+}
+
 addBtn.addEventListener("click", function () {
     const title = titleInput.value.trim();
     const amount = Number(amountInput.value.trim());
@@ -52,7 +63,8 @@ addBtn.addEventListener("click", function () {
         id: Date.now(),
         title,
         amount,
-        category
+        category,
+        timestamp: new Date().toLocaleString()
     };
 
     transactions.push(transaction);
@@ -87,7 +99,8 @@ function addTransactionToList(transaction) {
     li.innerHTML = `
         <span class ="text">
             ${transaction.title} (${transaction.category}):
-            ${formatYen(transaction.amount)}
+            ${formatYen(transaction.amount)} <br>
+            <small>${transaction.timestamp}</small>
         </span>
         <div>    
             <button class="edit-btn">Edit</button>
@@ -131,6 +144,7 @@ saveEditBtn.addEventListener("click", () => {
     transaction.title = title;
     transaction.amount = amount;
     transaction.category = category;
+    transaction.timestamp = newDate().toLocaleString();
 
     applyFilter();
     updateValues();
@@ -141,6 +155,14 @@ saveEditBtn.addEventListener("click", () => {
 });
 
 cancelEditBtn.addEventListener("click", closeModal);
+
+modal.addEventListener("click", e => {
+    if(e.target === modal) closeModal();
+});
+
+document.addEventListener("keydown", e => {
+    if(e.key === "Escape") closeModal();
+});
 
 function closeModal() {
     modal.classList.remove("show");
@@ -215,18 +237,26 @@ function applyFilter() {
 }
 
 function renderChart() {
-    const income = transactions
-        .filter(t => t.amount > 0)
-        .reduce((acc, t) => acc + t.amount, 0);
+    const categories = ["food", "transport", "salary", "other"];
+    const categoryTotals = categories.map(cat =>
+        transactions.filter(t => t.category === cat).reduce((acc, t) => acc + Math.abs(t.amount),0)
+    );
+    const emptyMsg = document.getElementById("chart-empty");
 
-    const expense = transactions
-        .filter(t => t.amount < 0)
-        .reduce ((acc, t) => acc + t.amount, 0);
+    if (transactions.length === 0) {
+        emptyMsg.style.display = "block";
 
-    const data = [income, Math.abs(expense)];
+        if (chart) {
+            chart.destroy();
+            chart = null;
+        }
+        return;
+    } else {
+        emptyMsg.style.display = "none";
+    }
 
     if (chart) {
-        chart.data.datasets[0].data = data;
+        chart.data.datasets[0].data = categoryTotals;
         chart.update();
         return;
     }
@@ -235,12 +265,16 @@ function renderChart() {
     chart = new Chart(ctx, {
         type: "doughnut",
         data: {
-            labels: ["Income", "Expense"],
+            labels: categories.map(c => c.charAt(0).toUpperCase() + c.slice(1)),
             datasets: [{
-                label: "Money Flow",
-                data: data,
-                backgroundColor: ["#4caf50", "#f44336"]
+                data: categoryTotals,
+                backgroundColor: ["#4caf50", "#2196f3", "#f9a825", "#9c27b0"]
             }]
+        },
+        options: {
+            plugins: {
+                legend: { position: "bottom" }
+            }
         }
     });
 }

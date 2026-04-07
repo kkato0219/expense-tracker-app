@@ -35,6 +35,11 @@ h2 {
     margin-bottom: 15px;
 }
 
+.card:hover {
+    transform: translateY(-3px);
+    transition: 0.2s;
+}
+
 .summary-items {
     display: flex;
     justify-content: space-between;
@@ -229,6 +234,10 @@ canvas {
     display: block;
 }
 
+#chart-empty {
+    display: none;
+}
+
 button {
     border: none;
     border-radius: 10px;
@@ -243,6 +252,10 @@ button:active {
 
 button:hover {
     opacity: 0.9;
+}
+
+button:active {
+    transform: scale(0.95);
 }
 
 .modal {
@@ -274,12 +287,39 @@ button:hover {
     border-radius: 12px;
     width: 90%;
     max-width: 400px;
+    animation: fadeIn 0.3s ease;
 }
 
 .empty {
     text-align: center;
     color: #888;
     margin-top: 20px;
+}
+
+body.dark {
+    background: linear-gradient(135deg, #1e1e2f, #121212);
+    color: white;
+}
+
+body.dark .card {
+    background: #1f1f2e;
+    color: white;
+}
+
+body.dark input,
+body.dark select {
+    background: #2c2c3a;
+    color: white;
+    border: 1px solid #444;
+}
+
+body.dark button {
+    opacity: 0.9;
+}
+
+#toggle-theme {
+    display: block;
+    margin: 10px auto 20px;
 }
 
 @keyframes fadeIn {
