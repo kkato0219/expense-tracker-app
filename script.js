@@ -144,7 +144,7 @@ saveEditBtn.addEventListener("click", () => {
     transaction.title = title;
     transaction.amount = amount;
     transaction.category = category;
-    transaction.timestamp = newDate().toLocaleString();
+    transaction.timestamp = new Date().toLocaleString();
 
     applyFilter();
     updateValues();
