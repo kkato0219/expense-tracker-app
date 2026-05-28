@@ -1,54 +1,45 @@
-# 💰 BudgetFlow - Expense Tracker
+# BudgetFlow — Expense Tracker App
 
-A simple and responsive expense tracking web app built with vanilla JavaScript.
+A modern personal finance dashboard built 
+with HTML, CSS, and JavaScript.
 
----
+## Live Demo
+https://kkato0219.github.io/expense-tracker-app/
 
-## 🚀 Features
-- Add, edit, and delete transactions
-- Category filtering and search
-- Real-time balance calculation
-- Interactive doughnut chart (by category)
-- Data saved using LocalStorage
-- Dark mode toggle 🌙
-- Responsive and modern UI
+## Screenshots
 
----
+![BudgetFlow](assets/screenshot.png)
 
-## 🛠️ Tech Stack
-- HTML
-- CSS
-- JavaScript
+## Features
+- Income / Expense toggle button
+- Add transactions with title, amount, date, category
+- 7 categories (Food, Transport, Shopping, Bills, Health, Salary, Other)
+- Doughnut chart for spending overview
+- Filter by category
+- Filter by month
+- Search transactions
+- Edit and delete transactions
+- Monthly budget setting with progress bar
+- Budget warning (yellow at 80%, red at 100%)
+- localStorage persistence
+- Fully responsive design
+
+## Technologies Used
+- HTML5
+- CSS3
+- JavaScript (Vanilla)
 - Chart.js
+- Google Fonts (Inter)
+- CSS Grid
+- Flexbox
+- localStorage API
 
----
-
-## 🌐 Live Demo
-[View the live app](https://kkato0219.github.io/expense-tracker-app/)
-
----
-
-## 📸 Screenshot
-![App Screenshot](screenshot.png)
-
----
-
-## 📚 What I Learned
-- Managing application state with JavaScript
-- DOM manipulation and event handling
-- Using Chart.js for data visualization
-- Working with LocalStorage for persistence
-- Improving UI/UX with features like dark mode and animations
-
----
-
-## 💡 Future Improvements
-- Export transactions to CSV
-- Monthly summary view
-- Better mobile responsiveness
-- User authentication (login system)
-
----
-
-## 🙌 Author
-Kenichi Kato
+## What I Learned
+- DOM manipulation with querySelector
+- Event listeners
+- Array methods (forEach, filter, reduce, find)
+- Object.keys / Object.values
+- localStorage save and load
+- Chart.js doughnut chart
+- Dynamic CSS with classList
+- Form validation
